@@ -97,7 +97,15 @@ impl Recipe {
             let directions = cleaned_directions_block.split("\n");
 
             for (index, step) in directions.into_iter().enumerate() {
-                md.push_str(&Md::ol(index + 1, step));
+
+                if step.starts_with(char::is_numeric) {
+                    // If the step already starts with a number, 
+                    // don't try to number it again.
+                    md.push_str(&format!("{}\n", step))                    
+                } else {
+                    md.push_str(&Md::ol(index + 1, step));
+                }
+
             }
 
         }
