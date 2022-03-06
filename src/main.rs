@@ -1,22 +1,35 @@
-use std::io::{self, Read, BufRead};
+use std::{
+    env, fs,
+    io::{self, BufRead},
+    process::exit,
+};
 
 use recipe::Recipe;
 use serde_json::Result;
 
-mod recipe;
 mod md;
+mod recipe;
+mod scrape;
 fn main() {
-    let input = read_stdin();
+    let args: Vec<String> = env::args().collect();
+    let filepath = &args[1];
+
+    let input = {
+        if filepath == "-" {
+            read_stdin()
+        } else {
+            read_file(filepath)
+        }
+    };
 
     let recipe: Result<Recipe> = serde_json::from_str(&input);
 
     if let Ok(r) = recipe {
         println!("{}", r.to_md());
     } else {
-        println!("{}", input);
+        eprintln!("Unable to parse as a recipe.");
+        exit(1);
     }
-
-
 }
 
 fn read_stdin() -> String {
@@ -29,4 +42,8 @@ fn read_stdin() -> String {
     }
 
     buffer
+}
+
+fn read_file(filepath: &str) -> String {
+    fs::read_to_string(filepath).expect(&format!("Could not read file: {}", filepath))
 }
